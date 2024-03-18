@@ -84,8 +84,8 @@ def index():
 @token_required
 def get_all_users(current_user):
 
-    if not current_user.admin:
-        return jsonify({"message": "Cannot perform that function!"}), 401
+#    if not current_user.admin:
+#        return jsonify({"message": "Cannot perform that function!"}), 401
 
     users = User.query.all()
 
@@ -125,8 +125,8 @@ def get_one_user(current_user, public_id):
 @token_required
 def update_user(current_user, public_id):
 
-    if not current_user.admin:
-        return jsonify({"message": "Cannot perform that function!"}), 401
+#    if not current_user.admin:
+#        return jsonify({"message": "Cannot perform that function!"}), 401
 
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
@@ -261,7 +261,7 @@ def create_quiz(current_user):
         questions_number=questions_number,
         questions_type=questions_type,
         shared=False,
-        user_id=current_user.id,
+    #    user_id=current_user.id,
     )
 
     # db.session.add(quiz)
@@ -324,7 +324,7 @@ def register():
     db.session.commit()
 
     user_data = {
-        "id": new_user.id,
+        "public_id": new_user.public_id,
         "username": new_user.username,
         "email": new_user.email,
     }

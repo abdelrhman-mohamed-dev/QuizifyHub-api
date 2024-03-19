@@ -284,17 +284,14 @@ def create_quiz(current_user):
 
 @app.route("/api/v1/login", methods=["POST"])
 def login():
-    auth = request.authorization
-    if not auth or not auth.username or not auth.password:
-        return make_response(
-            "Could not verify",
-            401,
-            {"WWW-Authenticate": 'Basic realm="Login required"'},
-        )
-    user = User.query.filter_by(username=auth.username).first()
+    auth = request.get_json()
+    if not auth or not auth["username"] or not auth["password"]:
+        return jsonify({"message": "Please provide username and password!"}), 400
+    user = User.query.filter_by(username=auth["username"]).first()
+   
     if not user:
         return jsonify({"message": "Could not verify user!not found"}), 401
-    if check_password_hash(user.password, auth.password):
+    if check_password_hash(user.password, auth["password"]):
         token = jwt.encode(
             {
                 "public_id": user.public_id,

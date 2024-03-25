@@ -53,15 +53,15 @@ def token_required(f):
             token = request.headers["x-access-token"]
 
         if not token:
-            return jsonify({"message": "Token is missing!"}), 401
+            return jsonify({"message": "Token is missing!"})
 
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             current_user = User.query.filter_by(public_id=data["public_id"]).first()
         except jwt.ExpiredSignatureError as e:
-            return jsonify({"message": "Token has expired!"}), 401
+            return jsonify({"message": "Token has expired!"})
         except jwt.InvalidTokenError as e:
-            return jsonify({"message": "Token is invalid!"}), 401
+            return jsonify({"message": "Token is invalid!"})
 
         return f(current_user, *args, **kwargs)
 
@@ -85,7 +85,7 @@ def index():
 def get_all_users(current_user):
 
 #    if not current_user.admin:
-#        return jsonify({"message": "Cannot perform that function!"}), 401
+#        return jsonify({"message": "Cannot perform that function!"})
 
     users = User.query.all()
 
@@ -102,7 +102,7 @@ def get_all_users(current_user):
             "password": user.password,
         }
         output.append(user_data)
-    return jsonify({"users": output}, 200)
+    return jsonify({"users": output})
 
 
 @app.route("/api/v1/user/<public_id>", methods=["GET"])
@@ -110,7 +110,7 @@ def get_all_users(current_user):
 def get_one_user(current_user, public_id):
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
-        return jsonify({"message": "No user found!"}), 404
+        return jsonify({"message": "No user found!"})
     user_data = {
         "public_id": user.public_id,
         "username": user.username,
@@ -118,7 +118,7 @@ def get_one_user(current_user, public_id):
         "admin": user.admin,
         "activated": user.activated,
     }
-    return jsonify({"user": user_data}, 200)
+    return jsonify({"user": user_data})
 
 
 @app.route("/api/v1/user/<public_id>", methods=["PUT"])
@@ -126,11 +126,10 @@ def get_one_user(current_user, public_id):
 def update_user(current_user, public_id):
 
 #    if not current_user.admin:
-#        return jsonify({"message": "Cannot perform that function!"}), 401
-
+#        return jsonify({"message": "Cannot perform that function!"})
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
-        return jsonify({"message": "No user found!"}, 404)
+        return jsonify({"message": "No user found!"})
 
     user.admin = True
 
@@ -144,7 +143,7 @@ def update_user(current_user, public_id):
         "admin": user.admin,
         "activated": user.activated,
     }
-    return jsonify({"message": "User updated successfully", "user": user_data}, 201)
+    return jsonify({"message": "User updated successfully", "user": user_data})
 
 
 @app.route("/api/v1/user/<public_id>", methods=["DELETE"])
@@ -152,14 +151,14 @@ def update_user(current_user, public_id):
 def delete_user(current_user, public_id):
 
     if not current_user.admin:
-        return jsonify({"message": "Cannot perform that function!"}), 401
+        return jsonify({"message": "Cannot perform that function!"})
 
     user = User.query.filter_by(public_id=public_id).first()
     if not user:
-        return jsonify({"message": "No user found!"}, 404)
+        return jsonify({"message": "No user found!"})
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"message": "User deleted successfully!"}, 201)
+    return jsonify({"message": "User deleted successfully!"})
 
 
 @app.route("/api/v1/create-quiz", methods=["POST"])
@@ -167,19 +166,19 @@ def delete_user(current_user, public_id):
 def create_quiz(current_user):
     # Check if the PDF file is present in the request files
     if "pdf_file" not in request.files:
-        return jsonify({"message": "No PDF file part!"}), 400
+        return jsonify({"message": "No PDF file part!"})
 
     # Access the PDF file from the request
     pdf_file = request.files["pdf_file"]
 
     # Check if questions_number is present in the form data
     if "questions_number" not in request.form:
-        return jsonify({"message": "No questions number provided!"}), 400
+        return jsonify({"message": "No questions number provided!"})
     questions_number = request.form["questions_number"]
 
     # Check if questions_type is present in the form data
     if "questions_type" not in request.form:
-        return jsonify({"message": "No questions type provided!"}), 400
+        return jsonify({"message": "No questions type provided!"})
     questions_type = request.form["questions_type"]
 
     # Further processing logic can go here
@@ -278,7 +277,7 @@ def create_quiz(current_user):
                 "Quiz_pdf": "dawnload_link for the pdf",
             }
         ),
-        200,
+       
     )
 
 
@@ -286,11 +285,11 @@ def create_quiz(current_user):
 def login():
     auth = request.get_json()
     if not auth or not auth["username"] or not auth["password"]:
-        return jsonify({"message": "Please provide username and password!"}), 400
+        return jsonify({"message": "Please provide username and password!"})
     user = User.query.filter_by(username=auth["username"]).first()
    
     if not user:
-        return jsonify({"message": "Could not verify user!not found"}), 401
+        return jsonify({"message": "Could not verify user!not found"})
     if check_password_hash(user.password, auth["password"]):
         token = jwt.encode(
             {
@@ -299,15 +298,15 @@ def login():
             },
             app.config["SECRET_KEY"],
         )
-        return jsonify({"token": token}), 200
-    return jsonify({"message": "Could not verify user!wrongpass"}), 401
+        return jsonify({"token": token})
+    return jsonify({"message": "Could not verify user!"})
 
 
 @app.route("/api/v1/register", methods=["POST"])
 def register():
     data = request.get_json()
     if not data or not data["username"] or not data["password"]:
-        return jsonify({"message": "Please provide username and password!"}), 400
+        return jsonify({"message": "Please provide username and password!"})
     hashed_password = generate_password_hash(data["password"], method="pbkdf2:sha256")
     new_user = User(
         public_id=str(uuid.uuid4()),
@@ -325,7 +324,7 @@ def register():
         "username": new_user.username,
         "email": new_user.email,
     }
-    return jsonify({"message": "User created successfully", "user": user_data}, 201)
+    return jsonify({"message": "User created successfully", "user": user_data})
 
 
 with app.app_context():
